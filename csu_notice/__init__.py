@@ -1,13 +1,22 @@
-from .config import _config
-from .data_source import get_lateset_head, get_notices
 from nonebot import get_bots
-from nonebot.plugin import on_command, require
+from nonebot.plugin import on_shell_command, require
+from nonebot.permission import SUPERUSER
 from nonebot.adapters.cqhttp import GroupMessageEvent, Bot
+from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_OWNER
 
+from .parser import _parser
+from .config import _config
+from .handle import Handle
+from .data_source import get_latest_head, get_latest_notice, get_notices
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
-csu_notice = on_command("csu_notice", priority=5)
+csu_notice = on_shell_command(
+    "csu_notice",
+    parser=_parser,
+    permission=SUPERUSER | GROUP_OWNER | GROUP_ADMIN,
+    priority=5,
+)
 
 
 @scheduler.scheduled_job("cron", minute="*", id="csu_notice")
@@ -16,7 +25,7 @@ async def _():
         tag = _config.tags.get(tag_name)
         if tag.latest_head:
             notices = await get_notices(tag=tag_name, head=tag.latest_head)
-        _config.tags.get(tag_name).latest_head = await get_lateset_head(tag=tag_name)
+        _config.tags.get(tag_name).latest_head = await get_latest_head(tag=tag_name)
         _config.dump()
         for notice in notices:
             for group_id in tag.enabled_group:
@@ -29,18 +38,13 @@ async def _():
 
 
 @csu_notice.handle()
-async def _(bot: Bot, event: GroupMessageEvent):
-    message = ""
-    if str(event.get_message()) == "on":
-        if event.group_id not in config.enable_group:
-            config.enable_group.append(event.group_id)
-            message = "本群已添加到通知列表！"
-        else:
-            message = "本群已在通知列表中！"
-    elif str(event.get_message()) == "off":
-        if event.group_id in config.enable_group:
-            config.enable_group.remove(event.group_id)
-            message = "本群已从通知列表移除！"
-        else:
-            message = "本群不在通知列表中！"
-    await bot.send(event, message)
+async def _(bot: Bot, event: GroupMessageEvent, state):
+    args = state["args"]
+    args.group_id = event.group_id
+    if hasattr(args, "handle") and args.handle:
+        print(args.handle)
+        message = await getattr(Handle, args.handle)(args)
+        if message:
+            await bot.send(event, message)
+    else:
+        await bot.send(event, await get_latest_notice("main"))
