@@ -1,9 +1,9 @@
-from typing import List
+from typing import List, Dict, Any
 from httpx import AsyncClient
 from .config import _config
 
 
-def format_notice(notice: str) -> str:
+def format_notice(notice: Dict[str, Any]) -> str:
     return (
         notice.get("title")
         + " | "
@@ -25,7 +25,7 @@ async def get_notices(tag: str, head: int) -> List[str]:
     async with AsyncClient(base_url=f"{_config.api_server}/{tag}") as client:
         res = await client.post("", params={"head": head})
     notices = res.json().get("notices")
-    if notices:
+    if head and notices:
         return [format_notice(notice) for notice in notices]
     else:
         return []

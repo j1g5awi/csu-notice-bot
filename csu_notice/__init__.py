@@ -23,10 +23,8 @@ csu_notice = on_shell_command(
 async def _():
     for tag_name in _config.tags:
         tag = _config.tags.get(tag_name)
-        if tag.latest_head:
-            notices = await get_notices(tag=tag_name, head=tag.latest_head)
-        _config.tags.get(tag_name).latest_head = await get_latest_head(tag=tag_name)
-        _config.dump()
+        notices = await get_notices(tag=tag_name, head=tag.latest_head)
+        tag.latest_head = await get_latest_head(tag=tag_name)
         for notice in notices:
             for group_id in tag.enabled_group:
                 for bot in get_bots().values():
@@ -35,6 +33,7 @@ async def _():
                             group_id=group_id,
                             message=notice,
                         )
+    _config.dump()
 
 
 @csu_notice.handle()
