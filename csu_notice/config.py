@@ -26,7 +26,6 @@ class Config(BaseModel):
     def __init__(self, **data: Any) -> None:
         if self._path.exists():
             super().__init__(**json.load(self._path.open("r", encoding="utf-8")))
-            assert self.api_server
         else:
             super().__init__()
             self.dump()

@@ -22,6 +22,8 @@ csu_notice = on_shell_command(
 
 @scheduler.scheduled_job("cron", minute="*", id="csu_notice")
 async def _():
+    if not _config.api_server:
+        return
     notices = []
     for tag, latest_head in _config.tag.items():
         for notice in await get_notices(_config.api_server, tag, latest_head):
@@ -60,6 +62,10 @@ async def _(bot: Bot, event: GroupMessageEvent, state):
         if message:
             await bot.send(event, message)
     else:
-        await bot.send(
-            event, format_notice(await get_latest_notice(_config.api_server, "main"))
-        )
+        if _config.api_server:
+            await bot.send(
+                event,
+                format_notice(await get_latest_notice(_config.api_server, "main")),
+            )
+        else:
+            await bot.send(event, "请设置 API 服务器！")
