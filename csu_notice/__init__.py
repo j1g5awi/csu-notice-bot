@@ -7,7 +7,7 @@ from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_OWNER
 from .parser import _parser
 from .config import _config
 from .handle import Handle
-from .utils import filter_notice, format_notice
+from .utils import filter_notice, filter_out_notice, format_notice
 from .data_source import get_notices, get_latest_head, get_latest_notice
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -35,15 +35,10 @@ async def _():
             if not group.limit or index < group.limit:
                 if (
                     notice["tag"] in group.subscribe
-                    and (
-                        filter_notice(notice, group.filter.from_, group.filter.keyword)
-                        == 2
-                        or not (group.filter.from_ and group.filter.keyword)
-                    )
-                    and filter_notice(
+                    and filter_notice(notice, group.filter.from_, group.filter.keyword)
+                    and filter_out_notice(
                         notice, group.filter_out.from_, group.filter_out.keyword
                     )
-                    == 0
                 ):
                     for bot in get_bots().values():
                         if isinstance(bot, Bot):

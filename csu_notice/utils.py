@@ -1,13 +1,24 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 
-def filter_notice(notice: Dict[str, Any], from_: List[str], keyword: List[str]) -> int:
-    _ = 1 if notice["from"] in from_ else 0
+def filter_notice(notice: Dict[str, Any], from_: List[str], keyword: List[str]) -> bool:
+    _ = True if not keyword else False
     for key_word in keyword:
         if key_word in notice["message"]:
-            _ = _ + 1
+            _ = True
             break
-    return _
+    return _ and (True if not from_ or notice["from"] in from_ else False)
+
+
+def filter_out_notice(
+    notice: Dict[str, Any], from_: List[str], keyword: List[str]
+) -> bool:
+    _ = True
+    for key_word in keyword:
+        if key_word in notice["message"]:
+            _ = False
+            break
+    return _ and (True if not (from_ and notice["from"] in from_) else False)
 
 
 def format_notice(notice: Dict[str, Any]) -> str:
