@@ -6,15 +6,15 @@ from pydantic import BaseModel, Field
 
 
 class Filter(BaseModel):
-    from_: List[str] = Field(alias="from")
-    keyword: List[str]
+    from_: List[str] = Field(default=[], alias="from")
+    keyword: List[str] = []
 
 
 class Group(BaseModel):
-    subscribe: List[str]
-    limit: int
-    filter: Filter
-    filter_out: Filter
+    subscribe: List[str] = []
+    limit: int = 0
+    filter: Filter = Filter()
+    filter_out: Filter = Filter()
 
 
 class Config(BaseModel):
