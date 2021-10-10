@@ -7,7 +7,8 @@ from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_OWNER
 from .parser import _parser
 from .config import _config
 from .handle import Handle
-from .data_source import get_latest_head, get_latest_notice, get_notices
+from .utils import filter_notice, format_notice
+from .data_source import get_notices, get_latest_head, get_latest_notice
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -21,29 +22,49 @@ csu_notice = on_shell_command(
 
 @scheduler.scheduled_job("cron", minute="*", id="csu_notice")
 async def _():
-    for tag_name in _config.tags:
-        tag = _config.tags.get(tag_name)
-        notices = await get_notices(tag=tag_name, head=tag.latest_head)
-        tag.latest_head = await get_latest_head(tag=tag_name)
-        for notice in notices:
-            for group_id in tag.enabled_group:
-                for bot in get_bots().values():
-                    if isinstance(bot, Bot):
-                        await bot.send_group_msg(
-                            group_id=group_id,
-                            message=notice,
-                        )
+    notices = []
+    for tag, latest_head in _config.tag.items():
+        for notice in await get_notices(_config.api_server, tag, latest_head):
+            notice["tag"] = tag
+            notice["message"] = format_notice(notice)
+            notices.append(notice)
+        _config.tag[tag] = await get_latest_head(_config.api_server, tag)
+
+    for group_id, group in _config.group.items():
+        for index, notice in enumerate(notices):
+            if not group.limit or index < group.limit:
+                if (
+                    notice["tag"] in group.subscribe
+                    and (
+                        filter_notice(notice, group.filter.from_, group.filter.keyword)
+                        == 2
+                        or not (group.filter.from_ and group.filter.keyword)
+                    )
+                    and filter_notice(
+                        notice, group.filter_out.from_, group.filter_out.keyword
+                    )
+                    == 0
+                ):
+                    for bot in get_bots().values():
+                        if isinstance(bot, Bot):
+                            await bot.send_group_msg(
+                                group_id=int(group_id),
+                                message=notice["message"],
+                            )
+            else:
+                break
     _config.dump()
 
 
 @csu_notice.handle()
 async def _(bot: Bot, event: GroupMessageEvent, state):
     args = state["args"]
-    args.group_id = event.group_id
+    args.group_id = str(event.group_id)
     if hasattr(args, "handle") and args.handle:
-        print(args.handle)
         message = await getattr(Handle, args.handle)(args)
         if message:
             await bot.send(event, message)
     else:
-        await bot.send(event, await get_latest_notice("main"))
+        await bot.send(
+            event, format_notice(await get_latest_notice(_config.api_server, "main"))
+        )
