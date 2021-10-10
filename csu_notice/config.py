@@ -36,6 +36,7 @@ class Config(BaseModel):
         json.dump(
             self.dict(by_alias=True),
             self._path.open("w", encoding="utf-8"),
+            ensure_ascii=False,
             indent=4,
         )
 
