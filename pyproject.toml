@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "csu-notice"
-version = "0.1.0-alpha.2"
+version = "0.1.0-alpha.3"
 description = "CSU Notice"
 authors = ["Jigsaw <j1g5aw@foxmail.com>"]
 license = "AGPL-3.0"
