@@ -15,6 +15,8 @@ Demo：[Dr.Sink](https://wpa.qq.com/msgrd?v=3&uin=1351483470&site=qq&menu=yes)
 - `csu_notice ubsub tag` 在本群取消订阅通知（默认为所有通知）  
   **例：**`csu_notice unsub cse`（取消订阅计算机院通知）
 - `csu_notice set api_server`设置通知 API 服务器
+- `csu_notice srch title`搜索标题含有该关键字的最近五个通知
+- `csu_notice show id`返回对应通知的详细内容，不带参数则返回最近通知
 - `csu_notice fl`设置过滤器
   - `-f, --from from ...`来源
   - `-k, --keyword keyword ...`关键词
