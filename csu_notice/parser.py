@@ -13,6 +13,12 @@ unsub.add_argument("tag", nargs="*")
 set = subparsers.add_parser("set")
 set.add_argument("api_server")
 
+srch = subparsers.add_parser("srch")
+srch.add_argument("title")
+
+show = subparsers.add_parser("show")
+show.add_argument("id", nargs="?", default=0)
+
 fl = subparsers.add_parser("fl")
 fl.add_argument("-f", "--from", action="store", nargs="*", default=[], type=str)
 fl.add_argument("-k", "--keyword", action="store", nargs="*", default=[], type=str)

@@ -8,7 +8,7 @@ from .parser import _parser
 from .config import _config
 from .handle import Handle
 from .utils import filter_notice, filter_out_notice, format_notice
-from .data_source import get_notices, get_latest_head, get_latest_notice
+from .data_source import get_notices, get_latest_head, get_notice
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -61,11 +61,3 @@ async def _(bot: Bot, event: GroupMessageEvent, state):
         message = await getattr(Handle, args.handle)(args)
         if message:
             await bot.send(event, message)
-    else:
-        if _config.api_server:
-            await bot.send(
-                event,
-                format_notice(await get_latest_notice(_config.api_server, "main")),
-            )
-        else:
-            await bot.send(event, "请设置 API 服务器！")

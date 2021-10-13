@@ -24,7 +24,7 @@ def filter_out_notice(
 def format_notice(notice: Dict[str, Any]) -> str:
     return (
         notice["title"]
-        + " | "
+        + "｜"
         + notice["from"]
         + "\n"
         + notice["uri"]
