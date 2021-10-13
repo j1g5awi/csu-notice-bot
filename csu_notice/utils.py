@@ -1,4 +1,6 @@
-from typing import Dict, List, Any, Optional
+from typing import Dict, List, Any
+
+from nonebot.adapters.cqhttp.message import MessageSegment
 
 
 def filter_notice(notice: Dict[str, Any], from_: List[str], keyword: List[str]) -> bool:
@@ -29,5 +31,9 @@ def format_notice(notice: Dict[str, Any]) -> str:
         + "\n"
         + notice["uri"]
         + "\n"
-        + (notice["content"] if notice["content"] else "这里本来应该有一张图")
+        + (
+            MessageSegment.image("base64://" + notice["content"])
+            if notice["content"]
+            else "这里本该有一张图"
+        )
     )
