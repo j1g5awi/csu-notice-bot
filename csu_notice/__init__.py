@@ -8,7 +8,7 @@ from .parser import _parser
 from .config import _config
 from .handle import Handle
 from .utils import filter_notice, filter_out_notice, format_notice
-from .data_source import get_notices, get_latest_head, get_notice
+from .data_source import get_notices, get_latest_head
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -20,7 +20,7 @@ csu_notice = on_shell_command(
 )
 
 
-@scheduler.scheduled_job("cron", minute="*", id="csu_notice")
+@scheduler.scheduled_job("cron", minute="*/5", id="csu_notice")
 async def _():
     if not _config.api_server:
         return
@@ -28,13 +28,13 @@ async def _():
     for tag, latest_head in _config.tag.items():
         for notice in await get_notices(_config.api_server, tag, latest_head):
             notice["tag"] = tag
-            notice["message"] = format_notice(notice)
+            notice["message"] = format_notice(notice,_config.enable_content)
             notices.append(notice)
         _config.tag[tag] = await get_latest_head(_config.api_server, tag)
 
     for group_id, group in _config.group.items():
         for index, notice in enumerate(notices):
-            if not group.limit or index < group.limit:
+            if not _config.limit or index < _config.limit:
                 if (
                     notice["tag"] in group.subscribe
                     and filter_notice(notice, group.filter.from_, group.filter.keyword)

@@ -23,7 +23,7 @@ def filter_out_notice(
     return _ and (True if not (from_ and notice["from"] in from_) else False)
 
 
-def format_notice(notice: Dict[str, Any]) -> str:
+def format_notice(notice: Dict[str, Any], enable_content: bool) -> str:
     return (
         notice["title"]
         + "｜"
@@ -33,7 +33,7 @@ def format_notice(notice: Dict[str, Any]) -> str:
         + "\n"
         + (
             MessageSegment.image("base64://" + notice["content"])
-            if notice["content"]
+            if enable_content and notice["content"]
             else "这里本该有一张图"
         )
     )

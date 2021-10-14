@@ -12,7 +12,6 @@ class Filter(BaseModel):
 
 class Group(BaseModel):
     subscribe: List[str] = []
-    limit: int = 0
     filter: Filter = Filter()
     filter_out: Filter = Filter()
 
@@ -20,6 +19,8 @@ class Group(BaseModel):
 class Config(BaseModel):
     _path: Path = Path() / "data" / "csu_notice" / "config.json"
     api_server: str = ""
+    limit: int = 0
+    enable_content: bool = False
     tag: Dict[str, int] = {"main": 0, "cse": 0}
     group: Dict[str, Group] = {}
 

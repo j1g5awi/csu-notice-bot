@@ -59,7 +59,9 @@ class Handle:
     @classmethod
     async def show(cls, args: Namespace) -> str:
         if _config.api_server:
-            return format_notice(await get_notice(_config.api_server, "main", args.id))
+            return format_notice(
+                await get_notice(_config.api_server, "main", args.id), True
+            )
         else:
             return "请设置 API 服务器！"
 
