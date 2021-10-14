@@ -3,7 +3,7 @@ from typing import Optional
 
 from .utils import format_notice
 from .config import _config, Group
-from .data_source import get_latest_notice, search_notice, get_notice
+from .data_source import get_latest_head, search_notice, get_notice
 
 
 class Handle:
@@ -36,12 +36,29 @@ class Handle:
 
     @classmethod
     async def set(cls, args: Namespace) -> Optional[str]:
-        try:
-            await get_latest_notice(args.api_server, "main")
-            _config.api_server = args.api_server
-            _config.dump()
-        except:
-            return "服务器未通过检测，设置失败！"
+        if args.name == "api_server":
+            try:
+                await get_latest_head(args.value, "main")
+                _config.api_server = args.value
+                _config.dump()
+            except:
+                return "服务器未通过检测！"
+        elif args.name == "limit":
+            if args.value.isdigit():
+                _config.limit = int(args.value)
+                _config.dump()
+            else:
+                return "请设置为数字！"
+        elif args.name == "enable_content":
+            if args.value.lower() in ["true", "false"]:
+                _config.enable_content = {"true": True, "false": False}[
+                    args.value.lower()
+                ]
+                _config.dump()
+            else:
+                return "请设置为布尔值"
+        else:
+            return "该设置项不存在！"
 
     @classmethod
     async def srch(cls, args: Namespace) -> str:

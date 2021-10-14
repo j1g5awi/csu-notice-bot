@@ -11,7 +11,8 @@ unsub = subparsers.add_parser("unsub")
 unsub.add_argument("tag", nargs="*")
 
 set = subparsers.add_parser("set")
-set.add_argument("api_server")
+set.add_argument("name")
+set.add_argument("value")
 
 srch = subparsers.add_parser("srch")
 srch.add_argument("title")
