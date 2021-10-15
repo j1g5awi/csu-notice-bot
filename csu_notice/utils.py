@@ -25,9 +25,7 @@ def filter_out_notice(
 
 def format_notice(notice: Dict[str, Any], enable_content: bool) -> str:
     return (
-        notice["title"]
-        + "｜"
-        + notice["from"]
+        "｜".join([notice["title"], notice["from"], str(notice["id"])])
         + "\n"
         + notice["uri"]
         + "\n"
