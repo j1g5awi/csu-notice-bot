@@ -19,6 +19,7 @@ class Group(BaseModel):
 class Config(BaseModel):
     _path: Path = Path() / "data" / "csu_notice" / "config.json"
     api_server: str = ""
+    token: str = ""
     limit: int = 0
     enable_content: bool = False
     tag: Dict[str, int] = {"main": 0, "cse": 0}

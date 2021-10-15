@@ -3,7 +3,7 @@ from typing import Optional
 
 from .utils import format_notice
 from .config import _config, Group
-from .data_source import get_latest_head, search_notice, get_notice
+from .data_source import get_latest_head, reload_content, search_notice, get_notice
 
 
 class Handle:
@@ -43,6 +43,18 @@ class Handle:
                 _config.dump()
             except:
                 return "服务器未通过检测！"
+        elif args.name == "token":
+            if _config.api_server:
+                try:
+                    assert await reload_content(
+                        _config.api_server, "main", "1", args.value
+                    )
+                    _config.token = args.value
+                    _config.dump()
+                except:
+                    return "token 未通过检测！"
+            else:
+                return "请先设置服务器！"
         elif args.name == "limit":
             if args.value.isdigit():
                 _config.limit = int(args.value)
@@ -63,7 +75,7 @@ class Handle:
     @classmethod
     async def srch(cls, args: Namespace) -> str:
         if _config.api_server:
-            notices = await search_notice(_config.api_server, "main", args.title)
+            notices = await search_notice(_config.api_server, args.tag, args.title)
             return "\n".join(
                 [
                     "｜".join([notice["title"], notice["from"], str(notice["id"])])
@@ -77,8 +89,20 @@ class Handle:
     async def show(cls, args: Namespace) -> str:
         if _config.api_server:
             return format_notice(
-                await get_notice(_config.api_server, "main", args.id), True
+                await get_notice(_config.api_server, args.tag, args.id), True
             )
+        else:
+            return "请设置 API 服务器！"
+
+    @classmethod
+    async def rl(cls, args: Namespace) -> Optional[str]:
+        if _config.api_server:
+            if _config.token:
+                await reload_content(
+                    _config.api_server, args.tag, args.id, _config.token
+                )
+            else:
+                return "请设置 token！"
         else:
             return "请设置 API 服务器！"
 
