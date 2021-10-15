@@ -28,7 +28,7 @@ async def _():
     for tag, latest_head in _config.tag.items():
         for notice in await get_notices(_config.api_server, tag, latest_head):
             notice["tag"] = tag
-            notice["message"] = format_notice(notice,_config.enable_content)
+            notice["message"] = format_notice(notice, _config.enable_content)
             notices.append(notice)
         _config.tag[tag] = await get_latest_head(_config.api_server, tag)
 
