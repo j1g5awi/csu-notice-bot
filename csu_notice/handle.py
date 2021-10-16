@@ -63,9 +63,11 @@ class Handle:
                 return "请设置为数字！"
         elif args.name in ["enable_content", "enable_rss"]:
             if args.value.lower() in ["true", "false"]:
-                _config.enable_content = {"true": True, "false": False}[
-                    args.value.lower()
-                ]
+                setattr(
+                    _config,
+                    args.name,
+                    {"true": True, "false": False}[args.value.lower()],
+                )
                 _config.dump()
             else:
                 return "请设置为布尔值"
