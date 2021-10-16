@@ -31,13 +31,16 @@ async def reload_content(api_server: str, tag: str, id: str, token: str) -> bool
     return res.json().get("msg") == "ok"
 
 
-async def get_notices(api_server: str, tag: str, head: int) -> List[Dict[str, Any]]:
+async def get_notices(
+    api_server: str, tag: str, head: int, enable_content: bool
+) -> List[Dict[str, Any]]:
     async with AsyncClient(base_url=f"{api_server}/{tag}") as client:
         res = await client.get("", params={"head": head})
     notices = res.json().get("data")
     if head and notices:
-        for notice in notices:
-            notice["content"] = await get_content(api_server, tag, notice["id"])
+        if enable_content:
+            for notice in notices:
+                notice["content"] = await get_content(api_server, tag, notice["id"])
         return notices
     else:
         return []
