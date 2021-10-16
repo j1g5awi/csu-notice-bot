@@ -22,6 +22,7 @@ class Config(BaseModel):
     token: str = ""
     limit: int = 0
     enable_content: bool = False
+    enable_rss: bool = False
     tag: Dict[str, int] = {"main": 0, "cse": 0}
     group: Dict[str, Group] = {}
 

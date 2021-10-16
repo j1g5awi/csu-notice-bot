@@ -61,7 +61,7 @@ class Handle:
                 _config.dump()
             else:
                 return "请设置为数字！"
-        elif args.name == "enable_content":
+        elif args.name in ["enable_content", "enable_rss"]:
             if args.value.lower() in ["true", "false"]:
                 _config.enable_content = {"true": True, "false": False}[
                     args.value.lower()

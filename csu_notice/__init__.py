@@ -8,6 +8,7 @@ from .config import _config
 from .data_source import get_latest_head, get_notices
 from .handle import Handle
 from .parser import _parser
+from .rss import app
 from .utils import filter_notice, filter_out_notice, format_notice
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
