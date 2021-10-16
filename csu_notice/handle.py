@@ -1,9 +1,9 @@
 from argparse import Namespace
 from typing import Optional
 
+from .config import Group, _config
+from .data_source import get_latest_head, get_notice, reload_content, search_notice
 from .utils import format_notice
-from .config import _config, Group
-from .data_source import get_latest_head, reload_content, search_notice, get_notice
 
 
 class Handle:
