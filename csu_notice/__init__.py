@@ -64,3 +64,7 @@ async def _(bot: Bot, event: GroupMessageEvent, state):
         message = await getattr(Handle, args.handle)(args)
         if message:
             await bot.send(event, message)
+    elif hasattr(args, "message"):
+        await bot.send(event, args.message)
+    else:
+        await bot.send(event, _parser.format_help())
