@@ -1,6 +1,8 @@
 from argparse import Namespace
 from typing import Optional
 
+from nonebot.adapters.cqhttp import message
+
 from .config import Group, _config
 from .data_source import get_latest_head, get_notice, reload_content, search_notice
 from .utils import format_notice
@@ -8,31 +10,66 @@ from .utils import format_notice
 
 class Handle:
     @classmethod
-    async def sub(cls, args: Namespace):
-        if not args.tag:
-            args.tag = ["main"]
-        for tag in args.tag:
-            if tag in _config.tag:
-                if args.group_id not in _config.group:
-                    _config.group[args.group_id] = Group()
-                if tag not in _config.group[args.group_id].subscribe:
-                    _config.group[args.group_id].subscribe.append(tag)
+    async def sub(cls, args: Namespace) -> Optional[str]:
+        if _config.api_server:
+            error = []
+            warn = []
 
-        _config.dump()
+            if not args.tag:
+                args.tag = ["main"]
+            args.tag = set(args.tag)
+            for tag in args.tag:
+                if tag not in _config.tag:
+                    try:
+                        _config.tag[tag] = await get_latest_head(
+                            _config.api_server, tag
+                        )
+                    except:
+                        error.append(tag)
+            if args.tag and args.group_id not in _config.group:
+                _config.group[args.group_id] = Group()
+            for tag in args.tag:
+                if tag not in error:
+                    if tag not in _config.group[args.group_id].subscribe:
+                        _config.group[args.group_id].subscribe.append(tag)
+                    else:
+                        warn.append(tag)
+            _config.dump()
+
+            message = ""
+            if error:
+                message += "error：" + "，".join(error) + " 不可用！\n"
+            if warn:
+                message += "warn：" + "，".join(warn) + " 已订阅！"
+            if message:
+                return message
+        else:
+            return "请先设置服务器！"
 
     @classmethod
-    async def unsub(cls, args: Namespace):
+    async def unsub(cls, args: Namespace) -> Optional[str]:
+        warn = []
+
+        if (
+            args.group_id not in _config.group
+            or not _config.group[args.group_id].subscribe
+        ):
+            return "本群未订阅任何通知！"
         if not args.tag:
-            args.tag = _config.tag.keys()
+            args.tag = _config.group[args.group_id].subscribe
+        args.tag = set(args.tag)
         for tag in args.tag:
-            if (
-                args.group_id in _config.group
-                and tag in _config.group[args.group_id].subscribe
-            ):
+            if tag in _config.group[args.group_id].subscribe:
                 _config.group[args.group_id].subscribe.remove(tag)
-        if not _config.group[args.group_id].subscribe:
-            _config.group.pop(args.group_id)
+            else:
+                warn.append(tag)
         _config.dump()
+
+        message = ""
+        if warn:
+            message += "warn：" + "，".join(warn) + " 已订阅！"
+        if message:
+            return message
 
     @classmethod
     async def set(cls, args: Namespace) -> Optional[str]:
@@ -77,41 +114,53 @@ class Handle:
     @classmethod
     async def srch(cls, args: Namespace) -> str:
         if _config.api_server:
-            notices = await search_notice(_config.api_server, args.tag, args.title)
-            return "\n".join(
-                [
-                    "｜".join([notice["title"], notice["from"], str(notice["id"])])
-                    for notice in notices[-5:]
-                ]
-            )
+            if args.tag in _config.tag:
+                notices = await search_notice(_config.api_server, args.tag, args.title)
+                return "\n".join(
+                    [
+                        "｜".join([notice["title"], notice["from"], str(notice["id"])])
+                        for notice in notices[-5:]
+                    ]
+                )
+            else:
+                return "该通知标签不存在！"
         else:
             return "请设置 API 服务器！"
 
     @classmethod
     async def show(cls, args: Namespace) -> str:
         if _config.api_server:
-            return format_notice(
-                await get_notice(_config.api_server, args.tag, args.id)
-            )
+            if args.tag in _config.tag:
+                return format_notice(
+                    await get_notice(_config.api_server, args.tag, args.id)
+                )
+            else:
+                return "该通知标签不存在！"
         else:
             return "请设置 API 服务器！"
 
     @classmethod
     async def rl(cls, args: Namespace) -> Optional[str]:
         if _config.api_server:
-            if _config.token:
-                await reload_content(
-                    _config.api_server, args.tag, args.id, _config.token
-                )
+            if args.tag in _config.tag:
+                if _config.token:
+                    await reload_content(
+                        _config.api_server, args.tag, args.id, _config.token
+                    )
+                else:
+                    return "请设置 token！"
             else:
-                return "请设置 token！"
+                return "该通知标签不存在！"
         else:
             return "请设置 API 服务器！"
 
     @classmethod
     async def fl(cls, args: Namespace) -> Optional[str]:
-        if args.group_id not in _config.group:
-            return "本群未订阅任何校内通知，请先订阅！"
+        if (
+            args.group_id not in _config.group
+            or not _config.group[args.group_id].subscribe
+        ):
+            return "本群未订阅任何通知！"
         filter = "filter_out" if args.filter_out else "filter"
         if not args.remove:
             for from_ in getattr(args, "from"):

@@ -8,7 +8,7 @@ app: FastAPI = get_asgi()
 
 
 @app.get("/csu/{tag}")
-async def _(tag: str):
+async def _(tag: str) -> Response:
     if _config.enable_rss:
         rss = """<?xml version="1.0" encoding="UTF-8"?>
 <rss  xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">

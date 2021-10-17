@@ -38,7 +38,7 @@ async def get_notices(
     async with AsyncClient(base_url=f"{api_server}/{tag}") as client:
         res = await client.get("", params={"head": head})
     notices = res.json().get("data")
-    if head and notices:
+    if notices:
         if enable_content:
             for notice in notices:
                 notice["content"] = await get_content(api_server, tag, notice["id"])
