@@ -15,10 +15,11 @@ Demo：[Dr.Sink](https://wpa.qq.com/msgrd?v=3&uin=1351483470&site=qq&menu=yes)
 - `csu_notice ubsub tag` 在本群取消订阅通知（默认为所有通知）  
   **例：**`csu_notice unsub cse`（取消订阅计算机院通知）
 - `csu_notice set name value`设置配置项
-  - `api_server: str`API 服务器地址
-  - `token: str`重载截图需要的 token
-  - `limit: int`每次通知推送的数量限制
-  - `enable_content: bool`通知推送时是否带截图
+  - `api_server: str = ""`API 服务器地址
+  - `token: str = ""`重载截图需要的 token
+  - `limit: int = 0`每次通知推送的数量限制，0 为不限制
+  - `enable_content: bool = False`通知推送时是否带截图
+  - `enable_rss: bool = False`是否开启 RSS 服务器
 - `csu_notice srch title`搜索标题含有该关键字的最近五个通知
   - `-T, --tag tag`指定 tag，默认为`main`
 - `csu_notice show id`返回对应通知的详细内容，不带参数则返回最新通知
