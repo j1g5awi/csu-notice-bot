@@ -6,10 +6,10 @@ from nonebot.adapters.cqhttp.message import MessageSegment
 def filter_notice(notice: Dict[str, Any], from_: List[str], keyword: List[str]) -> bool:
     _ = True if not keyword else False
     for key_word in keyword:
-        if key_word in notice["message"]:
+        if key_word in notice["title"]:
             _ = True
             break
-    return _ and (True if not from_ or notice["from"] in from_ else False)
+    return _ and (True if not from_ else notice["from"] in from_)
 
 
 def filter_out_notice(
@@ -17,10 +17,10 @@ def filter_out_notice(
 ) -> bool:
     _ = True
     for key_word in keyword:
-        if key_word in notice["message"]:
+        if key_word in notice["title"]:
             _ = False
             break
-    return _ and (True if not (from_ and notice["from"] in from_) else False)
+    return _ and (True if not from_ else notice["from"] not in from_)
 
 
 def format_notice(notice: Dict[str, Any]) -> str:
