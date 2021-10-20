@@ -31,7 +31,7 @@ def format_notice(notice: Dict[str, Any]) -> str:
         + "\n"
         + (
             MessageSegment.image("base64://" + notice["content"])
-            if notice["content"]
+            if notice.get("content")
             else "这里本来该有一张图"
         )
     )
