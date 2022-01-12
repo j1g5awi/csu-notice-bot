@@ -1,11 +1,11 @@
 import nonebot
-from nonebot.adapters.cqhttp import Bot as CQHTTPBot
+from nonebot.adapters.onebot.v11 import Adapter
 
 nonebot.init()
 
 app = nonebot.get_asgi()
 driver = nonebot.get_driver()
-driver.register_adapter("cqhttp", CQHTTPBot)
+driver.register_adapter(Adapter)
 
 nonebot.load_plugin("csu_notice")
 

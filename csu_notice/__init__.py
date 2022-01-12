@@ -1,6 +1,8 @@
+from argparse import Namespace
 from nonebot import get_bots
-from nonebot.adapters.cqhttp import Bot, GroupMessageEvent
-from nonebot.adapters.cqhttp.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
+from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.params import ShellCommandArgs
 from nonebot.permission import SUPERUSER
 from nonebot.plugin import on_shell_command, require
 
@@ -57,8 +59,7 @@ async def _():
 
 
 @csu_notice.handle()
-async def _(bot: Bot, event: GroupMessageEvent, state):
-    args = state["args"]
+async def _(bot: Bot, event: GroupMessageEvent, args: Namespace = ShellCommandArgs()):
     args.group_id = str(event.group_id)
     if hasattr(args, "handle") and args.handle:
         message = await getattr(Handle, args.handle)(args)

@@ -1,6 +1,6 @@
 from typing import Any, Dict, List
 
-from nonebot.adapters.cqhttp.message import MessageSegment
+from nonebot.adapters.onebot.v11.message import MessageSegment
 
 
 def filter_notice(notice: Dict[str, Any], from_: List[str], keyword: List[str]) -> bool:
