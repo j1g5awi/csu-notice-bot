@@ -1,17 +1,21 @@
 from argparse import Namespace
-from nonebot import get_bots
+
+from nonebot import get_bots, get_driver
 from nonebot.adapters.onebot.v11 import Bot, GroupMessageEvent
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 from nonebot.params import ShellCommandArgs
 from nonebot.permission import SUPERUSER
 from nonebot.plugin import on_shell_command, require
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlmodel.sql.expression import select
+
+from csu_notice.util import fetch_notices, fetch_per_page, login
 
 from .config import _config
-from .data_source import get_latest_head, get_notices
+from .data import Notice, SQLModel, engine
 from .handle import Handle
 from .parser import _parser
 from .rss import app
-from .utils import filter_notice, filter_out_notice, format_notice
 
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -22,11 +26,32 @@ csu_notice = on_shell_command(
     priority=5,
 )
 
+notices = set()
 
-@scheduler.scheduled_job("cron", minute="*/5", id="csu_notice")
+
+@get_driver().on_startup
 async def _():
-    if not _config.api_server:
-        return
+    async with engine.begin() as conn:
+        await conn.run_sync(SQLModel.metadata.create_all)
+    async with AsyncSession(engine) as session:
+        statement = select(Notice)
+        results = await session.execute(statement)
+        for notice in results:
+            notices.add(notice[0].url)
+
+
+@scheduler.scheduled_job("cron", minute="*", id="csu_notice")
+async def _():
+    await login()
+    async with AsyncSession(engine) as session:
+        for notice in await fetch_notices():
+            if notice.url not in notices:
+                notice.content = await fetch_per_page(notice.url)
+                session.add(notice)
+                notices.add(notice.url)
+        await session.commit()
+
+    """
     notices = []
     for tag, latest_head in _config.tag.items():
         for notice in await get_notices(
@@ -56,6 +81,7 @@ async def _():
             else:
                 break
     _config.dump()
+"""
 
 
 @csu_notice.handle()

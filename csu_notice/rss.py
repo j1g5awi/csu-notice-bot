@@ -1,21 +1,23 @@
 from fastapi import FastAPI, Response
 from nonebot import get_asgi
+from sqlmodel import col, select
+from sqlmodel.ext.asyncio.session import AsyncSession
 
 from .config import _config
-from .data_source import get_notices
-from .utils import filter_notice, filter_out_notice
+from .data import Notice, engine
+from .filter import filter_notice, filter_out_notice
 
 app: FastAPI = get_asgi()
 
 
-@app.get("/csu/{tag}")
+@app.get("/csu")
 async def _(
-    tag: str,
     filter: str = "",
     filter_author: str = "",
     filterout: str = "",
     filterout_author: str = "",
 ) -> Response:
+    print(_config.enable_rss)
     if _config.enable_rss:
         rss = """<?xml version="1.0" encoding="UTF-8"?>
 <rss  xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
@@ -28,11 +30,11 @@ async def _(
         <webMaster>j1g5aw@foxmail.com (Jigsaw)</webMaster>
         <language>zh-cn</language>
 """
-        notices = await get_notices(
-            _config.api_server, tag, _config.tag[tag] - 10, False
-        )
-        notices.reverse()
+        async with AsyncSession(engine) as session:
+            statement = select(Notice).order_by(col(Notice.id).desc()).limit(10)
+            notices = await session.execute(statement)
         for notice in notices:
+            notice = notice[0]
             if filter_notice(
                 notice,
                 [_ for _ in filter_author.split("|") if _],
@@ -43,11 +45,11 @@ async def _(
                 [_ for _ in filterout.split("|") if _],
             ):
                 rss += f"""        <item>
-            <title><![CDATA[{notice["title"]}]]></title>
-            <description><![CDATA[{notice["title"]}]]></description>
-            <guid isPermaLink="false">{notice["uri"]}</guid>
-            <link>{notice["uri"]}</link>
-            <author><![CDATA[{notice["from"]}]]></author>
+            <title><![CDATA[{notice.title}]]></title>
+            <description><![CDATA[{notice.content}]]></description>
+            <guid isPermaLink="false">{notice.url}</guid>
+            <link>{notice.url}</link>
+            <author><![CDATA[{notice.author}]]></author>
         </item>"""
         rss += """    </channel>
     </rss>"""

@@ -18,12 +18,10 @@ class Group(BaseModel):
 
 class Config(BaseModel):
     _path: Path = Path() / "data" / "csu_notice" / "config.json"
-    api_server: str = ""
-    token: str = ""
+    username: str = ""
+    password: str = ""
     limit: int = 0
-    enable_content: bool = False
     enable_rss: bool = False
-    tag: Dict[str, int] = {}
     group: Dict[str, Group] = {}
 
     def __init__(self, **data: Any) -> None:
